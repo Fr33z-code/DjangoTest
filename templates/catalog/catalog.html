@@ -1,0 +1,130 @@
+{% extends "base.html" %}
+
+{% block title %}Каталог - Меха и шубы{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <!-- Фильтры -->
+        <div class="col-md-3">
+            <div class="card mb-4">
+                <div class="card-header bg-dark text-white">
+                    <h5>Фильтры</h5>
+                </div>
+                <div class="card-body">
+                    <form method="get">
+                        <div class="mb-3">
+                            <input type="text" name="search" class="form-control" placeholder="Поиск..."
+                                   value="{{ search_query }}">
+                        </div>
+                        <div class="mb-3">
+                            <select name="category" class="form-select">
+                                <option value="">Все категории</option>
+                                {% for value, label in categories.items %}
+                                    <option value="{{ value }}" {% if current_category == value %}selected{% endif %}>
+                                        {{ label }}
+                                    </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <button type="submit" class="btn btn-primary w-100">Применить</button>
+                        <a href="{% url 'catalog' %}" class="btn btn-outline-secondary w-100 mt-2">Сбросить</a>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Товары -->
+        <div class="col-md-9">
+            <div class="row">
+                {% for product in page_obj %}
+                <div class="col-lg-4 col-md-6 mb-4">
+                    <div class="card h-100 product-card">
+                        <img src="data:image/jpeg;base64,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"
+                             class="card-img-top" alt="{{ product.name }}">
+                        <div class="card-body">
+                            <h5 class="card-title">{{ product.name }}</h5>
+                            <p class="card-text">{{ product.description|truncatechars:100 }}</p>
+                            <div class="d-flex justify-content-between align-items-center">
+                                <span class="price">{{ product.price }} ₽</span>
+                                <button class="btn btn-sm btn-outline-primary add-to-cart"
+                                        data-product-id="{{ product.id }}">
+                                    В корзину
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% empty %}
+                <div class="col-12">
+                    <div class="alert alert-info">Товары не найдены</div>
+                </div>
+                {% endfor %}
+            </div>
+
+            <!-- Пагинация -->
+            {% if page_obj.paginator.num_pages > 1 %}
+            <nav aria-label="Page navigation">
+                <ul class="pagination justify-content-center">
+                    {% if page_obj.has_previous %}
+                    <li class="page-item">
+                        <a class="page-link"
+                           href="?page=1{% if current_category %}&category={{ current_category }}{% endif %}{% if search_query %}&search={{ search_query }}{% endif %}">
+                            &laquo; Первая
+                        </a>
+                    </li>
+                    <li class="page-item">
+                        <a class="page-link"
+                           href="?page={{ page_obj.previous_page_number }}{% if current_category %}&category={{ current_category }}{% endif %}{% if search_query %}&search={{ search_query }}{% endif %}">
+                            Назад
+                        </a>
+                    </li>
+                    {% endif %}
+
+                    <li class="page-item disabled">
+                        <span class="page-link">
+                            Страница {{ page_obj.number }} из {{ page_obj.paginator.num_pages }}
+                        </span>
+                    </li>
+
+                    {% if page_obj.has_next %}
+                    <li class="page-item">
+                        <a class="page-link"
+                           href="?page={{ page_obj.next_page_number }}{% if current_category %}&category={{ current_category }}{% endif %}{% if search_query %}&search={{ search_query }}{% endif %}">
+                            Вперед
+                        </a>
+                    </li>
+                    <li class="page-item">
+                        <a class="page-link"
+                           href="?page={{ page_obj.paginator.num_pages }}{% if current_category %}&category={{ current_category }}{% endif %}{% if search_query %}&search={{ search_query }}{% endif %}">
+                            Последняя &raquo;
+                        </a>
+                    </li>
+                    {% endif %}
+                </ul>
+            </nav>
+            {% endif %}
+        </div>
+    </div>
+    <div class="mt-4 text-center">
+        <a href="{% url 'profile' %}" class="btn btn-info">
+            <i class="fas fa-user"></i> Профиль
+        </a>
+    </div>
+</div>
+
+<style>
+    .product-card {
+        transition: transform 0.3s;
+    }
+    .product-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+    }
+    .price {
+        font-weight: bold;
+        color: #d32f2f;
+        font-size: 1.2rem;
+    }
+</style>
+{% endblock %}
