@@ -1,57 +1,55 @@
-<!DOCTYPE html>
-<html lang="ru">
-<head>
-    <meta charset="UTF-8">
-    <title>Корзина</title>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
-</head>
-<body>
-<div class="container mt-3">
-    <a href="{% url 'catalog' %}" class="btn btn-primary">&larr; Назад</a>
-</div>
-<div class="container mt-4">
-    <h1 class="mb-4">Моя корзина</h1>
+    <!DOCTYPE html>
+    <html lang="ru">
+    <head>
+        <meta charset="UTF-8">
+        <title>Корзина</title>
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+    </head>
+    <body>
+    <div class="container mt-3">
+        <a href="{% url 'catalog' %}" class="btn btn-primary">&larr; Назад</a>
+    </div>
+    <div class="container mt-4">
+        <h1 class="mb-4">Моя корзина</h1>
 
-    {% if cart_items %}
-    <table class="table table-striped">
+        {% if cart_items %}
         <table class="table table-striped">
-            <thead>
-            <tr>
-                <th scope="col">Фото</th>
-                <th scope="col">Название</th>
-                <th scope="col">Цена</th>
-                <th scope="col">Количество</th>
-                <th scope="col">Сумма</th>
-                <th scope="col">Удалить</th>
-            </tr>
-            </thead>
-            <tbody>
-            {% for item in cart_items %}
-            <tr>
-                <td><img
-                        src="data:image/jpeg;base64,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"
-                        width="100px"/></td>
-                <td>{{ item.product.name }}</td>
-                <td>{{ item.product.price }} руб.</td>
-                <td>{{ item.quantity }}</td>
-                <td>{{ item.total_price }} руб.</td>
-                <td><a href="{% url 'delete_from_cart' item.id %}" class="btn btn-danger btn-sm">Удалить</a></td>
-            </tr>
-            {% endfor %}
-            </tbody>
-        </table>
+            <table class="table table-striped">
+                <thead>
+                <tr>
+                    <th scope="col">Фото</th>
+                    <th scope="col">Название</th>
+                    <th scope="col">Цена</th>
+                    <th scope="col">Количество</th>
+                    <th scope="col">Сумма</th>
+                    <th scope="col">Удалить</th>
+                </tr>
+                </thead>
+                <tbody>
+                {% for item in cart_items %}
+                <tr>
+                    <td><img src="https://res.cloudinary.com/da74tpgsc/image/upload/v1750327746/images_hqlquy.jpg" height="75px"></td>
+                    <td>{{ item.product.name }}</td>
+                    <td>{{ item.product.price }} руб.</td>
+                    <td>{{ item.quantity }}</td>
+                    <td>{{ item.total_price }} руб.</td>
+                    <td><a href="{% url 'delete_from_cart' item.id %}" class="btn btn-danger btn-sm">Удалить</a></td>
+                </tr>
+                {% endfor %}
+                </tbody>
+            </table>
 
-        <hr/>
-        <h4>Общая сумма заказа: {{ total_amount }} руб.</h4>
-        <a href="{% url 'home' %}" class="btn btn-success">Оформить заказ</a>
-        <a href="{% url 'catalog' %}" class="btn btn-primary ml-2">Продолжить покупки</a>
+            <hr/>
+            <h4>Общая сумма заказа: {{ total_amount }} руб.</h4>
+            <a href="{% url 'home' %}" class="btn btn-success">Оформить заказ</a>
+            <a href="{% url 'catalog' %}" class="btn btn-primary ml-2">Продолжить покупки</a>
 
-        {% else %}
-        <div class="alert alert-warning">
-            Ваша корзина пуста!
-        </div>
-        {% endif %}
-</div>
+            {% else %}
+            <div class="alert alert-warning">
+                Ваша корзина пуста!
+            </div>
+            {% endif %}
+    </div>
 
-</body>
-</html>
+    </body>
+    </html>

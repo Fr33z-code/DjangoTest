@@ -35,17 +35,18 @@
             {% endfor %}
         </select>
     </div>
-    <div class="mb-3">
-        <label class="form-label">Цена от:</label>
-        <input type="number" name="min_price" class="form-control" value="{{ min_price_filter }}">
+    <div class="d-flex align-items-end mb-4">
+        <div class="me-3" style="flex:1;">
+            <input type="number" name="min_price" class="form-control" placeholder="от {{ min_price }}" value="{{real_min}}">
+        </div>
+        <div style="flex:1;">
+            <input type="number" name="max_price" class="form-control" placeholder="до {{ max_price }}" value="{{real_max}}">
+        </div>
     </div>
-    <div class="mb-3">
-        <label class="form-label">Цена до:</label>
-        <input type="number" name="max_price" class="form-control" value="{{ max_price_filter }}">
-    </div>
+
     <button type="submit" class="btn btn-primary w-100">Применить</button>
     <a href="{% url 'catalog' %}" class="btn btn-outline-secondary w-100 mt-2">Сбросить</a>
-</form>
+        </form>
             </div>
         </div>
 
@@ -56,14 +57,14 @@
                 <div class="col-lg-4 col-md-6 mb-4">
                     <div class="card h-100 product-card">
                         <img src="https://res.cloudinary.com/da74tpgsc/image/upload/v1750327746/images_hqlquy.jpg">
-                        <h4>{{product.price}} руб.</h4>
-                        <div class="card-body">
+                        <h4 class="text-center">{{ product.price }} руб.</h4>
+                        <div class="card-body d-flex flex-column">
                             <h5 class="card-title">{{ product.name }}</h5>
                             <p class="card-text">{{ product.description|truncatechars:100 }}</p>
                                     {% csrf_token %}
-                                    <button type="button" class="btn btn-sm btn-outline-primary add-to-cart-btn" data-product-id="{{ product.id }}">
-                                    В корзину
-                                    </button>
+        <button type="button" class="btn btn-sm btn-outline-primary add-to-cart-btn mt-auto align-self-center" data-product-id="{{ product.id }}">
+            В корзину
+        </button>
                         </div>
                     </div>
                 </div>
