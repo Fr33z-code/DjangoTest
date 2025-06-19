@@ -7,9 +7,18 @@ from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
 from django.contrib.auth.decorators import login_required
 from django.core.paginator import Paginator
 from django.http import JsonResponse
+from django.views.decorators.cache import never_cache
 from django.views.decorators.csrf import csrf_exempt
 
 from app1.models import Product, Cart, CartItem
+
+
+@login_required
+def place_order(request):
+    cart = Cart.objects.get(user_id=request.user)
+    CartItem.objects.filter(cart_id=cart.id).delete()
+    return redirect('home')
+
 
 @login_required
 @csrf_exempt
@@ -32,6 +41,7 @@ def add_to_cart_ajax(request):
         return JsonResponse({'success': True})
     return JsonResponse({'success': False, 'error': 'Invalid request'})
 
+@never_cache
 @login_required
 def view_cart(request):
     cart, created = Cart.objects.get_or_create(user=request.user)
@@ -138,6 +148,7 @@ def signup_view(request):
     else:
         form = UserCreationForm()
     return render(request, 'signup.html', {'form': form})
+
 
 @csrf_exempt
 def login_view(request):
