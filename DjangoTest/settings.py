@@ -35,8 +35,18 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'app1'
+    'app1',
+    'cloudinary',
+    'rest_framework'
 ]
+
+CLOUDINARY_STORAGE = {
+    'CLOUD_NAME': 'da74tpgsc',
+    'API_KEY': 'da74tpgsc',
+    'API_SECRET': '1ixd1VwgGp521yB16ykSf-5Mr9k',
+}
+
+DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
@@ -49,7 +59,7 @@ MIDDLEWARE = [
 ]
 
 ROOT_URLCONF = 'DjangoTest.urls'
-
+TELEGRAM_BOT_TOKEN = '7568961059:AAHVxmk70zky6mhMq5eG0xW6DXD4-Vc7-Fg'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
@@ -99,6 +109,9 @@ LOGIN_URL = 'login'
 LOGOUT_REDIRECT_URL = 'catalog'
 
 LANGUAGE_CODE = 'en-us'
+YANDEX_CLIENT_ID = '9c58076f18094748be19666637f84e29'
+YANDEX_CLIENT_SECRET = '5a4ad472bae748c8bc24e811b7382854'
+YANDEX_REDIRECT_URI = 'http://localhost:8000/yandex/callback/'
 
 TIME_ZONE = 'UTC'
 
