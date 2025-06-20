@@ -2,11 +2,11 @@ from rest_framework import viewsets, status
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
-from drf_spectacular.utils import extend_schema, OpenApiParameter, OpenApiTypes
+from drf_spectacular.utils import extend_schema
 from django.shortcuts import get_object_or_404
-
 from app1.models import Cart, CartItem, Product
 from app1.serializers import CartItemSerializer, ProductSerializer
+
 
 @extend_schema(tags=["Cart"])
 class CartViewSet(viewsets.ViewSet):
@@ -84,6 +84,7 @@ class CartViewSet(viewsets.ViewSet):
         item = get_object_or_404(CartItem, id=item_id, cart__user=request.user)
         item.delete()
         return Response({"success": True})
+
 
 class ProductViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = Product.objects.filter(in_stock=True)

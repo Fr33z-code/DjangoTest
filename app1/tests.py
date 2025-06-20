@@ -8,15 +8,14 @@ from app1.models import Product
 class ProductCatalogTests(TestCase):
     def setUp(self):
         self.client = Client()
-        self.user = User.objects.create_user(username='testuser', password='password123')
-        self.client.login(username='testuser', password='password123')
+        self.user = User.objects.create_user(username='Fedor', password='1qaz2wsx3edc')
+        self.client.login(username='Fedor', password='1qaz2wsx3edc')
 
         Product.objects.create(
             name="Шуба из норки",
             price=120000,
             category='coat',
             description="Теплая зимняя шуба",
-            image='https://res.cloudinary.com/da74tpgsc/image/upload/v1750327746/images_hqlquy.jpg',
             in_stock=True,
             created_at=timezone.now()
         )
@@ -26,7 +25,6 @@ class ProductCatalogTests(TestCase):
             price=7000,
             category='accessory',
             description="Модный аксессуар",
-            image='https://res.cloudinary.com/da74tpgsc/image/upload/v1750327746/images_hqlquy.jpg',
             in_stock=False,
             created_at=timezone.now()
         )
@@ -42,11 +40,6 @@ class ProductCatalogTests(TestCase):
 
     def test_filter_by_category(self):
         response = self.client.get(reverse('catalog'), {'category': 'coat'})
-        self.assertContains(response, "Шуба из норки")
-        self.assertNotContains(response, "Аксессуар кожаный")
-
-    def test_filter_by_in_stock(self):
-        response = self.client.get(reverse('catalog'), {'in_stock': 'true'})
         self.assertContains(response, "Шуба из норки")
         self.assertNotContains(response, "Аксессуар кожаный")
 

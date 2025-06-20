@@ -141,8 +141,16 @@ def catalog(request):
 
     products = Product.objects.all()
 
+    if category:
+        products = products.filter(category=category, in_stock=True)
+
     if search_query:
-        products = products.filter(name__icontains=search_query)
+        output = []
+        for product in products:
+            a = [i.lower() for i in product.name.split()]
+            if search_query.lower() in a:
+                output.append(product)
+        products = output
 
     if min_price:
         try:
