@@ -4,6 +4,7 @@ from django.urls import path, include
 from app1 import views
 from rest_framework.routers import DefaultRouter
 from app1.api_views import ProductViewSet, CartViewSet
+from drf_spectacular.views import SpectacularAPIView, SpectacularSwaggerView
 
 router = DefaultRouter()
 router.register(r'products', ProductViewSet, basename='product')
@@ -42,5 +43,16 @@ urlpatterns = [
     path('api/cart/add/', cart_add, name='cart-add'),
     path('api/cart/update/', cart_update, name='cart-update'),
     path('api/cart/delete/', cart_delete, name='cart-delete'),
-    path('place_order/', views.place_order, name='place_order')
+    path('place_order/', views.place_order, name='place_order'),
+    path('cart/update_item/', views.update_cart_item, name='update_cart_item'),
+
+]
+router = DefaultRouter()
+router.register(r'products', ProductViewSet, basename='product')
+router.register(r'cart', CartViewSet, basename='cart')
+
+urlpatterns += [
+    path('api/schema/', SpectacularAPIView.as_view(), name='schema'),
+    path('api/docs/', SpectacularSwaggerView.as_view(url_name='schema'), name='swagger-ui'),
+    path('api/', include(router.urls)),
 ]

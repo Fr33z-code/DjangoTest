@@ -1,6 +1,7 @@
 import json
 import requests
 from django.conf import settings
+from django.contrib import messages
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import login, authenticate, get_user_model
 from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
@@ -9,6 +10,7 @@ from django.core.paginator import Paginator
 from django.http import JsonResponse
 from django.views.decorators.cache import never_cache
 from django.views.decorators.csrf import csrf_exempt
+from django.views.decorators.http import require_POST
 
 from app1.models import Product, Cart, CartItem
 
@@ -41,6 +43,7 @@ def add_to_cart_ajax(request):
         return JsonResponse({'success': True})
     return JsonResponse({'success': False, 'error': 'Invalid request'})
 
+
 @never_cache
 @login_required
 def view_cart(request):
@@ -56,6 +59,46 @@ def view_cart(request):
 
 
 @login_required
+def update_cart(request):
+    if request.method == 'POST':
+        cart = get_object_or_404(Cart, user=request.user)
+
+        for item in cart.items.all():
+            new_quantity = request.POST.get(f'quantity_{item.id}')
+            if new_quantity and new_quantity.isdigit():
+                item.quantity = int(new_quantity)
+                item.save()
+
+        return redirect('cart')
+    return None
+
+
+@require_POST
+@login_required
+def update_cart_item(request):
+    item_id = request.POST.get('item_id')
+    quantity = request.POST.get('quantity')
+
+    if not item_id or not quantity:
+        return JsonResponse({'success': False, 'error': 'Недопустимые данные'})
+
+    try:
+        quantity = int(quantity)
+        if quantity < 1:
+            raise ValueError
+    except ValueError:
+        return JsonResponse({'success': False, 'error': 'Неверное количество'})
+
+    try:
+        item = get_object_or_404(CartItem, id=item_id, cart__user=request.user)
+        item.quantity = quantity
+        item.save()
+        return JsonResponse({'success': True})
+    except CartItem.DoesNotExist:
+        return JsonResponse({'success': False, 'error': 'Товар не найден'})
+
+
+@login_required
 def delete_from_cart(request, product_id):
     cart = get_object_or_404(Cart, user=request.user)
     item = get_object_or_404(CartItem, id=product_id, cart=cart)
@@ -63,21 +106,25 @@ def delete_from_cart(request, product_id):
     return redirect('view_cart')
 
 
-@login_required
-def add_to_cart(request, product_id):
-    product = get_object_or_404(Product, id=product_id)
-    cart, created = Cart.objects.get_or_create(user=request.user)
-    cart_item, item_created = CartItem.objects.get_or_create(
-        cart=cart,
-        product=product,
-        defaults={'quantity': 1}
-    )
-
-    if not item_created:
-        cart_item.quantity += 1
-        cart_item.save()
-
-    return redirect('catalog')
+# @login_required
+# def add_to_cart(request, product_id):
+#     product = get_object_or_404(Product, id=product_id)
+#     if product.in_stock:
+#         cart, created = Cart.objects.get_or_create(user=request.user)
+#         cart_item, item_created = CartItem.objects.get_or_create(
+#             cart=cart,
+#             product=product,
+#             defaults={'quantity': 1}
+#         )
+#
+#         if not item_created:
+#             cart_item.quantity += 1
+#             cart_item.save()
+#
+#         return redirect('catalog')
+#     else:
+#         messages.error(request, 'Товара нет в наличии.')
+#         return redirect('catalog')
 
 
 @login_required
@@ -92,24 +139,17 @@ def catalog(request):
     min_price = request.GET.get('min_price')
     max_price = request.GET.get('max_price')
 
-    products = Product.objects.filter(in_stock=True)
-
-    if category:
-        products = products.filter(category=category)
+    products = Product.objects.all()
 
     if search_query:
-        output = []
-        for product in products:
-            a = [i.lower() for i in product.name.split()]
-            if search_query.lower() in a:
-                output.append(product)
-        products = output
+        products = products.filter(name__icontains=search_query)
 
     if min_price:
         try:
             products = products.filter(price__gte=float(min_price))
         except ValueError:
             pass
+
     if max_price:
         try:
             products = products.filter(price__lte=float(max_price))
@@ -170,14 +210,11 @@ def login_view(request):
 
 @login_required
 def profile_view(request):
-    return render(request, 'profile.html', {'user': request.user})
-
-
-@login_required
-def cart_context(request):
-    cart = request.session.get('cart', {})
-    total = sum(cart.values())
-    return {'cart_total': total}
+    user = request.user
+    username = user.username
+    if user.password == '':
+        username = username.split('_')[0]
+    return render(request, 'profile.html', {'username': username})
 
 
 def yandex_callback(request):
@@ -198,7 +235,6 @@ def yandex_callback(request):
     token_data = response.json()
     access_token = token_data.get('access_token')
 
-    # Получение информации о пользователе
     user_info_url = 'https://login.yandex.ru/info'
     headers = {'Authorization': f'OAuth {access_token}'}
     user_response = requests.get(user_info_url, headers=headers)
@@ -209,7 +245,7 @@ def yandex_callback(request):
     user_data = user_response.json()
     yandex_id = user_data.get('id')
     email = user_data.get('default_email') or f'{yandex_id}@yandex.fake'
-    username = user_data.get('login')
+    username = f"{user_data.get('login')}_{yandex_id}"
     User = get_user_model()
     user, created = User.objects.get_or_create(username=username, defaults={'email': email})
     login(request, user)
