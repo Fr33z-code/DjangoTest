@@ -1,12 +1,18 @@
 from django.db import transaction
+from django.shortcuts import get_object_or_404
 from rest_framework import viewsets, status
 from rest_framework.decorators import action
-from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated, AllowAny
+from rest_framework.response import Response
 from drf_spectacular.utils import extend_schema
-from django.shortcuts import get_object_or_404
-from app1.models import Cart, CartItem, Product, OrderItem, Order
-from app1.serializers import CartItemSerializer, ProductSerializer, OrderSerializer, CategorySerializer
+
+from app1.models import Cart, CartItem, Product, Order, OrderItem
+from app1.serializers import (
+    CartItemSerializer,
+    ProductSerializer,
+    OrderSerializer,
+    CategorySerializer,
+)
 
 
 @extend_schema(tags=["Cart"])
@@ -46,7 +52,7 @@ class CartViewSet(viewsets.ViewSet):
         return Response(serializer.data)
 
     @extend_schema(
-        summary="Обновить количество товара в корзине",
+        summary="Обновить количество товара",
         request=CartItemSerializer,
         responses={200: CartItemSerializer},
     )
@@ -86,15 +92,20 @@ class CartViewSet(viewsets.ViewSet):
         item.delete()
         return Response({"success": True})
 
+
 @extend_schema(tags=["Products"])
-@extend_schema(
-        summary="получение карточки конкретного товара",
-        request=ProductSerializer,
-        responses={200: dict},
-    )
 class ProductViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = Product.objects.filter(in_stock=True)
     serializer_class = ProductSerializer
+
+    @extend_schema(
+        summary="Получение списка товаров с фильтрацией",
+        responses={200: ProductSerializer(many=True)},
+    )
+    def list(self, request):
+        queryset = self.filter_queryset(self.get_queryset())
+        serializer = ProductSerializer(queryset, many=True)
+        return Response(serializer.data)
 
     def get_queryset(self):
         qs = super().get_queryset()
@@ -123,8 +134,8 @@ class OrderViewSet(viewsets.ViewSet):
     permission_classes = [IsAuthenticated]
 
     @extend_schema(
-        summary="Создание заказа",
-        responses={201: OrderSerializer}
+        summary="Создать заказ из корзины",
+        responses={201: OrderSerializer},
     )
     def create(self, request):
         user = request.user
@@ -138,7 +149,6 @@ class OrderViewSet(viewsets.ViewSet):
 
             with transaction.atomic():
                 total = sum(item.product.price * item.quantity for item in cart_items)
-
                 order = Order.objects.create(user=user, total_price=total)
 
                 for item in cart_items:
@@ -146,7 +156,7 @@ class OrderViewSet(viewsets.ViewSet):
                         order=order,
                         product=item.product,
                         quantity=item.quantity,
-                        price_per_item=item.product.price
+                        price_per_item=item.product.price,
                     )
 
                 cart_items.delete()
@@ -156,11 +166,13 @@ class OrderViewSet(viewsets.ViewSet):
         except Cart.DoesNotExist:
             return Response({"detail": "Корзина не найдена"}, status=status.HTTP_404_NOT_FOUND)
 
+
 @extend_schema(tags=["Category"])
 class CategoryViewSet(viewsets.ViewSet):
     permission_classes = [AllowAny]
+
     @extend_schema(
-        summary="Получить список категорий товаров",
+        summary="Список категорий товаров",
         responses={200: CategorySerializer(many=True)},
     )
     def list(self, request):
