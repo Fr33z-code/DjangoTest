@@ -73,7 +73,7 @@
     <hr/>
     <h4>Общая сумма заказа: <span id="total-amount">{{ total_amount }}</span> руб.</h4>
     <div class="d-flex gap-2">
-        <a href="{% url 'place_order' %}" class="btn btn-success">Оформить заказ</a>
+        <a href="{% url 'create_order_for_user' %}" class="btn btn-success">Оформить заказ</a>
         <a href="{% url 'catalog' %}" class="btn btn-primary">Продолжить покупки</a>
     </div>
 

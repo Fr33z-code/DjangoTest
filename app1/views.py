@@ -12,13 +12,32 @@ from django.views.decorators.cache import never_cache
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_POST
 
-from app1.models import Product, Cart, CartItem
+from app1.models import Product, Cart, CartItem, OrderItem, Order
 
 
-@login_required
-def place_order(request):
+# @login_required
+# def place_order(request):
+#     cart = Cart.objects.get(user_id=request.user)
+#     CartItem.objects.filter(cart_id=cart.id).delete()
+#     return redirect('home')
+
+def create_order_for_user(request):
     cart = Cart.objects.get(user_id=request.user)
-    CartItem.objects.filter(cart_id=cart.id).delete()
+    items = CartItem.objects.filter(cart_id=cart.id)
+    if not items.exists():
+        raise ValueError("Корзина пуста")
+    order = Order.objects.create(
+        user=request.user,
+        total_price=sum(item.product.price * item.quantity for item in items)
+    )
+    for item in items:
+        OrderItem.objects.create(
+            order=order,
+            product=item.product,
+            quantity=item.quantity,
+            price_per_item=item.product.price
+        )
+    items.delete()
     return redirect('home')
 
 
@@ -104,28 +123,6 @@ def delete_from_cart(request, product_id):
     item = get_object_or_404(CartItem, id=product_id, cart=cart)
     item.delete()
     return redirect('view_cart')
-
-
-# @login_required
-# def add_to_cart(request, product_id):
-#     product = get_object_or_404(Product, id=product_id)
-#     if product.in_stock:
-#         cart, created = Cart.objects.get_or_create(user=request.user)
-#         cart_item, item_created = CartItem.objects.get_or_create(
-#             cart=cart,
-#             product=product,
-#             defaults={'quantity': 1}
-#         )
-#
-#         if not item_created:
-#             cart_item.quantity += 1
-#             cart_item.save()
-#
-#         return redirect('catalog')
-#     else:
-#         messages.error(request, 'Товара нет в наличии.')
-#         return redirect('catalog')
-
 
 @login_required
 def home(request):
@@ -223,7 +220,6 @@ def profile_view(request):
     if user.password == '':
         username = username.split('_')[0]
     return render(request, 'profile.html', {'username': username})
-
 
 def yandex_callback(request):
     code = request.GET.get('code')
